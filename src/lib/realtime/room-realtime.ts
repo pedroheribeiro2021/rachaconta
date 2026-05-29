@@ -1,7 +1,8 @@
 import { supabase } from "../../../supabase/client";
 
-export function subscribeToRoom(roomId: string, callback: () => void) {
+export function subscribeToRoom(roomId: string, onEvent: () => void) {
   return supabase
+
     .channel(`room:${roomId}`)
 
     .on(
@@ -17,7 +18,7 @@ export function subscribeToRoom(roomId: string, callback: () => void) {
         filter: `room_id=eq.${roomId}`,
       },
 
-      callback,
+      onEvent,
     )
 
     .on(
@@ -31,7 +32,7 @@ export function subscribeToRoom(roomId: string, callback: () => void) {
         table: "item_consumers",
       },
 
-      callback,
+      onEvent,
     )
 
     .subscribe();
