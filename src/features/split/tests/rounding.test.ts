@@ -22,4 +22,12 @@ describe("splitCentsEvenly", () => {
 
     expect(total).toBe(9999);
   });
+
+  it("should preserve total across large split", () => {
+    const result = splitCentsEvenly(999999, 37);
+
+    const total = result.reduce((acc, value) => acc + value, 0);
+
+    expect(total).toBe(999999);
+  });
 });
