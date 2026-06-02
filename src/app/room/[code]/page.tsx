@@ -4,11 +4,17 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { getRoomByCode } from "@/features/room/api/get-room-by-code";
+import { getParticipantsByRoom } from "@/features/room/api/get-participants-by-room";
 
 interface Room {
   id: string;
   code: string;
   service_fee_percent: number;
+}
+
+interface Participant {
+  id: string;
+  nickname: string;
 }
 
 export default function RoomPage() {
@@ -18,12 +24,18 @@ export default function RoomPage() {
 
   const [loading, setLoading] = useState(true);
 
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
   useEffect(() => {
     async function loadRoom() {
       try {
         const room = await getRoomByCode(params.code as string);
 
         setRoom(room);
+
+        const participants = await getParticipantsByRoom(room.id);
+
+        setParticipants(participants);
       } catch (error) {
         console.error(error);
       } finally {
@@ -62,7 +74,21 @@ export default function RoomPage() {
         <div className="mt-8 rounded-xl bg-slate-900 p-4">
           <h2 className="font-semibold">Participantes</h2>
 
-          <p className="mt-2 text-slate-400">Ainda não carregados</p>
+          <div className="mt-2 space-y-2">
+            {participants.map((participant) => (
+              <div
+                key={participant.id}
+                className="
+          rounded-lg
+          bg-slate-800
+          px-3
+          py-2
+        "
+              >
+                {participant.nickname}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="mt-4 rounded-xl bg-slate-900 p-4">
