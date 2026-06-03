@@ -1,19 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { generateRoomCode } from "@/lib/utils/generate-room-code";
+import { createRoom } from "@/features/room/api/create-room";
+import { ensureAnonymousAuth } from "@/lib/supabase/auth";
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [nickname, setNickname] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleCreateRoom() {
-    const roomCode = generateRoomCode();
+    if (!nickname.trim()) {
+      alert("Informe um apelido");
+      return;
+    }
 
-    console.log({
-      nickname,
-      roomCode,
-    });
+    try {
+      setLoading(true);
+
+      const session = await ensureAnonymousAuth();
+
+      const authId = session.user.id;
+
+      const result = await createRoom(nickname.trim(), authId);
+
+      router.push(`/room/${result.room.code}`);
+    } catch (error) {
+      console.error(error);
+
+      alert("Erro ao criar mesa");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -36,6 +57,7 @@ export default function HomePage() {
         />
 
         <button
+          disabled={loading}
           onClick={handleCreateRoom}
           className="
             w-full
@@ -45,7 +67,7 @@ export default function HomePage() {
             font-semibold
           "
         >
-          Criar Mesa
+          {loading ? "Criando..." : "Criar Mesa"}
         </button>
       </div>
     </main>

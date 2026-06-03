@@ -1,4 +1,4 @@
-import { supabase } from "../../../../supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 export async function fetchRoomSnapshot(roomId: string) {
   const [roomResult, participantsResult, itemsResult, consumersResult] =

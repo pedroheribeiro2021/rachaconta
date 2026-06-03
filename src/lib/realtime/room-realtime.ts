@@ -1,4 +1,4 @@
-import { supabase } from "../../../supabase/client";
+import { supabase } from "../supabase/client";
 
 export function subscribeToRoom(roomId: string, onEvent: () => void) {
   return supabase

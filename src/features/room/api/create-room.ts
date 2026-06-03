@@ -1,5 +1,5 @@
+import { supabase } from "@/lib/supabase/client";
 import { generateRoomCode } from "@/lib/utils/generate-room-code";
-import { supabase } from "../../../../supabase/client";
 
 export async function createRoom(nickname: string, authId: string) {
   const roomCode = generateRoomCode();
