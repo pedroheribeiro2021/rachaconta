@@ -6,7 +6,9 @@ import { useParams } from "next/navigation";
 import { getRoomByCode } from "@/features/room/api/get-room-by-code";
 import { getParticipantsByRoom } from "@/features/room/api/get-participants-by-room";
 import { getItemsByRoom } from "@/features/room/api/get-items-by-room";
+import { getItemConsumers } from "@/features/room/api/get-item-consumers";
 import { createItem } from "@/features/room/api/create-item";
+import { toggleItemConsumer } from "@/features/item-consumers/api/toggle-item-consumer";
 
 interface Room {
   id: string;
@@ -25,6 +27,11 @@ interface Item {
   price_cents: number;
 }
 
+interface ItemConsumer {
+  item_id: string;
+  participant_id: string;
+}
+
 export default function RoomPage() {
   const params = useParams();
 
@@ -35,6 +42,8 @@ export default function RoomPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
 
   const [items, setItems] = useState<Item[]>([]);
+
+  const [itemConsumers, setItemConsumers] = useState<ItemConsumer[]>([]);
 
   const [itemName, setItemName] = useState("");
 
@@ -54,6 +63,12 @@ export default function RoomPage() {
         const items = await getItemsByRoom(room.id);
 
         setItems(items);
+
+        const allConsumers = await Promise.all(
+          items.map((item) => getItemConsumers(item.id)),
+        );
+
+        setItemConsumers(allConsumers.flat());
       } catch (error) {
         console.error(error);
       } finally {
@@ -89,6 +104,46 @@ export default function RoomPage() {
 
     setItemName("");
     setItemPrice("");
+  }
+
+  function isSelected(itemId: string, participantId: string) {
+    return itemConsumers.some(
+      (consumer) =>
+        consumer.item_id === itemId &&
+        consumer.participant_id === participantId,
+    );
+  }
+
+  async function handleToggleConsumer(itemId: string, participantId: string) {
+    const selected = isSelected(itemId, participantId);
+
+    await toggleItemConsumer({
+      itemId,
+      participantId,
+      selected,
+    });
+
+    if (selected) {
+      setItemConsumers((current) =>
+        current.filter(
+          (consumer) =>
+            !(
+              consumer.item_id === itemId &&
+              consumer.participant_id === participantId
+            ),
+        ),
+      );
+
+      return;
+    }
+
+    setItemConsumers((current) => [
+      ...current,
+      {
+        item_id: itemId,
+        participant_id: participantId,
+      },
+    ]);
   }
 
   if (loading) {
@@ -164,16 +219,38 @@ export default function RoomPage() {
             </button>
           </div>
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-4">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-lg bg-slate-800 px-3 py-2"
+                className="space-y-3 rounded-lg bg-slate-800 p-3"
               >
-                <span>{item.name}</span>
-                <span className="text-slate-300">
-                  R$ {(item.price_cents / 100).toFixed(2)}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span>{item.name}</span>
+                  <span className="text-slate-300">
+                    R$ {(item.price_cents / 100).toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {participants.map((participant) => {
+                    const selected = isSelected(item.id, participant.id);
+
+                    return (
+                      <button
+                        key={participant.id}
+                        type="button"
+                        onClick={() =>
+                          handleToggleConsumer(item.id, participant.id)
+                        }
+                        className="flex w-full justify-between rounded-lg bg-slate-700 px-3 py-2"
+                      >
+                        <span>{participant.nickname}</span>
+                        <span>{selected ? "✓" : ""}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             ))}
           </div>
