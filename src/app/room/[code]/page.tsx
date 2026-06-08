@@ -9,6 +9,7 @@ import { getItemsByRoom } from "@/features/room/api/get-items-by-room";
 import { getItemConsumers } from "@/features/room/api/get-item-consumers";
 import { createItem } from "@/features/room/api/create-item";
 import { toggleItemConsumer } from "@/features/item-consumers/api/toggle-item-consumer";
+import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
 
 interface Room {
   id: string;
@@ -146,6 +147,15 @@ export default function RoomPage() {
     ]);
   }
 
+  const totals = room
+    ? calculateParticipantTotals({
+        participants,
+        items,
+        itemConsumers,
+        serviceFeePercent: room.service_fee_percent,
+      })
+    : [];
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
@@ -250,6 +260,31 @@ export default function RoomPage() {
                       </button>
                     );
                   })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-slate-900 p-4">
+          <h2 className="font-semibold">Totais</h2>
+
+          <div className="mt-2 space-y-3">
+            {totals.map((total) => (
+              <div
+                key={total.participantId}
+                className="rounded-lg bg-slate-800 p-3"
+              >
+                <div className="font-medium">{total.nickname}</div>
+
+                <div className="mt-2 text-slate-300">
+                  Subtotal: R$ {(total.subtotalCents / 100).toFixed(2)}
+                </div>
+                <div className="text-slate-300">
+                  Taxa: R$ {(total.serviceFeeCents / 100).toFixed(2)}
+                </div>
+                <div className="text-slate-300">
+                  Total: R$ {(total.totalCents / 100).toFixed(2)}
                 </div>
               </div>
             ))}
