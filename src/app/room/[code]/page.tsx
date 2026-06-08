@@ -118,11 +118,15 @@ export default function RoomPage() {
   async function handleToggleConsumer(itemId: string, participantId: string) {
     const selected = isSelected(itemId, participantId);
 
-    await toggleItemConsumer({
-      itemId,
-      participantId,
-      selected,
-    });
+    try {
+      await toggleItemConsumer({
+        itemId,
+        participantId,
+        selected,
+      });
+    } catch (error) {
+      console.error(error);
+    }
 
     if (selected) {
       setItemConsumers((current) =>
@@ -176,6 +180,26 @@ export default function RoomPage() {
     <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
       <div className="max-w-md mx-auto pt-10">
         <h1 className="text-3xl font-bold">Mesa {room.code}</h1>
+
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(
+              `${window.location.origin}/join/${room.code}`,
+            );
+
+            alert("Link copiado");
+          }}
+          className="
+    mt-3
+    rounded-lg
+    bg-slate-800
+    px-3
+    py-2
+    text-sm
+  "
+        >
+          Copiar convite
+        </button>
 
         <p className="mt-4 text-slate-400">
           Taxa de serviço: {room.service_fee_percent}%
