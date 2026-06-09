@@ -128,16 +128,11 @@ export default function RoomPage() {
   }
 
   async function handleSaveEdit() {
-    console.log("SAVE INICIO");
-
     if (!editingItemId || !room) {
-      console.log("SEM ITEM OU ROOM");
       return;
     }
 
     const value = Number(editingPrice.replace(",", "."));
-
-    console.log("VALOR", value);
 
     if (Number.isNaN(value)) {
       console.log("VALOR INVALIDO");
@@ -150,30 +145,25 @@ export default function RoomPage() {
       priceCents: Math.round(value * 100),
     });
 
-    console.log("UPDATE EXECUTADO");
+    closeEditModal();
 
+    await refreshRoom(room.id);
+  }
+
+  function closeEditModal() {
     setEditingItemId(null);
 
     setEditingName("");
 
     setEditingPrice("");
-
-    await refreshRoom(room.id);
-
-    console.log("REFRESH EXECUTADO");
   }
 
   async function handleDeleteItem(itemId: string) {
-    console.log("DELETE INICIO", itemId);
-
     if (!room) {
-      console.log("SEM ROOM");
       return;
     }
 
     const confirmed = confirm("Excluir este item?");
-
-    console.log("CONFIRMADO?", confirmed);
 
     if (!confirmed) {
       return;
@@ -181,11 +171,7 @@ export default function RoomPage() {
 
     await deleteItem(itemId);
 
-    console.log("DELETE EXECUTADO");
-
     await refreshRoom(room.id);
-
-    console.log("REFRESH EXECUTADO");
   }
 
   function isSelected(itemId: string, participantId: string) {
@@ -404,36 +390,6 @@ export default function RoomPage() {
           </div>
         </div>
 
-        {editingItemId && (
-          <div className="mt-4 rounded-xl bg-slate-900 p-4">
-            <h2 className="font-semibold">Editar Item</h2>
-
-            <div className="mt-2 space-y-2">
-              <input
-                type="text"
-                value={editingName}
-                onChange={(e) => setEditingName(e.target.value)}
-                className="w-full rounded-lg bg-slate-800 px-3 py-2"
-              />
-
-              <input
-                type="text"
-                value={editingPrice}
-                onChange={(e) => setEditingPrice(e.target.value)}
-                className="w-full rounded-lg bg-slate-800 px-3 py-2"
-              />
-
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                className="w-full rounded-lg bg-blue-600 px-3 py-2 font-semibold hover:bg-blue-700"
-              >
-                Salvar
-              </button>
-            </div>
-          </div>
-        )}
-
         <div className="mt-4 rounded-xl bg-slate-900 p-4">
           <h2 className="font-semibold">Totais</h2>
 
@@ -463,6 +419,91 @@ export default function RoomPage() {
           </div>
         </div>
       </div>
+      {editingItemId && (
+        <div
+          className="
+            fixed
+            inset-0
+            z-50
+            flex
+            items-center
+            justify-center
+            bg-black/70
+            p-4
+          "
+        >
+          <div
+            className="
+              w-full
+              max-w-md
+              rounded-xl
+              bg-slate-900
+              p-5
+            "
+          >
+            <h2 className="text-xl font-semibold">Editar Item</h2>
+
+            <div className="mt-4 space-y-3">
+              <input
+                type="text"
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                className="
+                  w-full
+                  rounded-lg
+                  bg-slate-800
+                  px-3
+                  py-2
+                "
+              />
+
+              <input
+                type="text"
+                value={editingPrice}
+                onChange={(e) => setEditingPrice(e.target.value)}
+                className="
+                  w-full
+                  rounded-lg
+                  bg-slate-800
+                  px-3
+                  py-2
+                "
+              />
+            </div>
+
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={closeEditModal}
+                className="
+                  flex-1
+                  rounded-lg
+                  bg-slate-700
+                  px-3
+                  py-2
+                "
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                className="
+                  flex-1
+                  rounded-lg
+                  bg-blue-600
+                  px-3
+                  py-2
+                  font-semibold
+                "
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
