@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 import { createRoom } from "@/features/room/api/create-room";
 import { ensureAnonymousAuth } from "@/lib/supabase/auth";
-import Link from "next/link";
 
 export default function HomePage() {
   const router = useRouter();

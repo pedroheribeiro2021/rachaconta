@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { getRoomByCode } from "@/features/room/api/get-room-by-code";
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
+import { ParticipantTotal } from "@/features/split/types/participant-total";
 
 interface Room {
   id: string;
@@ -20,7 +21,7 @@ export default function SummaryPage() {
 
   const [room, setRoom] = useState<Room | null>(null);
 
-  const [totals, setTotals] = useState<any[]>([]);
+  const [totals, setTotals] = useState<ParticipantTotal[]>([]);
 
   const [grandTotal, setGrandTotal] = useState(0);
 

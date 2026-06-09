@@ -240,61 +240,53 @@ export default function RoomPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
       <div className="max-w-md mx-auto pt-10">
-        <h1 className="text-3xl font-bold">Mesa {room.code}</h1>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Mesa {room.code}</h1>
 
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(
-              `${window.location.origin}/join/${room.code}`,
-            );
+            <p className="mt-1 text-slate-400">
+              Taxa de serviço: {room.service_fee_percent}%
+            </p>
+          </div>
 
-            alert("Link copiado");
-          }}
-          className="
-    mt-3
-    rounded-lg
-    bg-slate-800
-    px-3
-    py-2
-    text-sm
-  "
-        >
-          Copiar convite
-        </button>
+          <div className="text-right">
+            <div className="text-sm text-slate-300">
+              {participants.length} participantes
+            </div>
+            <div className="text-sm text-slate-300">{items.length} itens</div>
 
-        <Link
-          href={`/room/${room.code}/summary`}
-          className="
-    mt-3
-    ml-2
-    inline-block
-    rounded-lg
-    bg-green-700
-    px-3
-    py-2
-    text-sm
-  "
-        >
-          Ver Resumo
-        </Link>
+            <div className="mt-2 flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${window.location.origin}/join/${room.code}`,
+                  );
 
-        <p className="mt-4 text-slate-400">
-          Taxa de serviço: {room.service_fee_percent}%
-        </p>
+                  alert("Link copiado");
+                }}
+                className="rounded-lg bg-slate-800 px-3 py-2 text-sm"
+              >
+                Copiar convite
+              </button>
+
+              <Link
+                href={`/room/${room.code}/summary`}
+                className="rounded-lg bg-green-700 px-3 py-2 text-sm"
+              >
+                Ver Resumo
+              </Link>
+            </div>
+          </div>
+        </div>
 
         <div className="mt-8 rounded-xl bg-slate-900 p-4">
           <h2 className="font-semibold">Participantes</h2>
 
-          <div className="mt-2 space-y-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             {participants.map((participant) => (
               <div
                 key={participant.id}
-                className="
-          rounded-lg
-          bg-slate-800
-          px-3
-          py-2
-        "
+                className="rounded-full bg-slate-800 px-3 py-1 text-sm"
               >
                 {participant.nickname}
               </div>
@@ -311,7 +303,7 @@ export default function RoomPage() {
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
               placeholder="Nome do item"
-              className="w-full rounded-lg bg-slate-800 px-3 py-2"
+              className="rounded-lg bg-slate-800 px-3 py-2"
             />
 
             <input
@@ -319,14 +311,14 @@ export default function RoomPage() {
               value={itemPrice}
               onChange={(e) => setItemPrice(e.target.value)}
               placeholder="Valor"
-              className="w-full rounded-lg bg-slate-800 px-3 py-2"
+              className="rounded-lg bg-slate-800 px-3 py-2"
             />
 
             <button
               onClick={handleAddItem}
               className="w-full rounded-lg bg-blue-600 px-3 py-2 font-semibold hover:bg-blue-700"
             >
-              Adicionar Item
+              Adicionar
             </button>
           </div>
 
@@ -334,7 +326,14 @@ export default function RoomPage() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="space-y-3 rounded-lg bg-slate-800 p-3"
+                className="
+  rounded-xl
+  border
+  border-slate-700
+  bg-slate-800
+  p-4
+  shadow
+"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -444,17 +443,21 @@ export default function RoomPage() {
                 key={total.participantId}
                 className="rounded-lg bg-slate-800 p-3"
               >
-                <div className="font-medium">{total.nickname}</div>
+                <>
+                  <div className="font-medium">{total.nickname}</div>
 
-                <div className="mt-2 text-slate-300">
-                  Subtotal: R$ {(total.subtotalCents / 100).toFixed(2)}
-                </div>
-                <div className="text-slate-300">
-                  Taxa: R$ {(total.serviceFeeCents / 100).toFixed(2)}
-                </div>
-                <div className="text-slate-300">
-                  Total: R$ {(total.totalCents / 100).toFixed(2)}
-                </div>
+                  <div className="mt-2 text-slate-300">
+                    Subtotal: R$ {(total.subtotalCents / 100).toFixed(2)}
+                  </div>
+
+                  <div className="text-slate-300">
+                    Taxa: R$ {(total.serviceFeeCents / 100).toFixed(2)}
+                  </div>
+
+                  <div className="text-slate-200 font-semibold">
+                    Total: R$ {(total.totalCents / 100).toFixed(2)}
+                  </div>
+                </>
               </div>
             ))}
           </div>
