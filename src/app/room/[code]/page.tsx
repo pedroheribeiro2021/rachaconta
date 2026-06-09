@@ -272,7 +272,7 @@ export default function RoomPage() {
             {participants.map((participant) => (
               <div
                 key={participant.id}
-                className="rounded-full bg-slate-800 px-3 py-1 text-sm"
+                className="rounded-full bg-blue-900/40 border border-blue-700 px-3 py-1 text-sm"
               >
                 {participant.nickname}
               </div>
@@ -283,28 +283,29 @@ export default function RoomPage() {
         <div className="mt-4 rounded-xl bg-slate-900 p-4">
           <h2 className="font-semibold">Itens</h2>
 
-          <div className="mt-2 space-y-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             <input
               type="text"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
-              placeholder="Nome do item"
-              className="rounded-lg bg-slate-800 px-3 py-2"
+              placeholder="Item"
+              className="flex-1 min-w-0 rounded-lg bg-slate-800 px-3 py-2"
             />
 
             <input
               type="text"
               value={itemPrice}
               onChange={(e) => setItemPrice(e.target.value)}
-              placeholder="Valor"
-              className="rounded-lg bg-slate-800 px-3 py-2"
+              placeholder="R$"
+              className="w-24 rounded-lg bg-slate-800 px-3 py-2"
             />
 
             <button
               onClick={handleAddItem}
-              className="w-full rounded-lg bg-blue-600 px-3 py-2 font-semibold hover:bg-blue-700"
+              className="rounded-lg bg-blue-600 px-4 py-2 font-semibold hover:bg-blue-700 whitespace-nowrap"
             >
-              Adicionar
+              <span className="inline sm:hidden">+</span>
+              <span className="hidden sm:inline">Adicionar Item</span>
             </button>
           </div>
 
@@ -322,8 +323,8 @@ export default function RoomPage() {
 "
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <div>{item.name}</div>
+                  <div className="flex-1">
+                    <div className="font-semibold">{item.name}</div>
 
                     <div className="text-sm text-slate-400">
                       R$ {(item.price_cents / 100).toFixed(2)}
@@ -365,7 +366,7 @@ export default function RoomPage() {
     items-center
     justify-between
     rounded-lg
-    bg-slate-700
+    bg-slate-700/60
     px-3
     py-2
     cursor-pointer
@@ -390,6 +391,17 @@ export default function RoomPage() {
           </div>
         </div>
 
+        <div className="mt-4 rounded-xl border border-blue-700 bg-blue-900/20 p-4">
+          <h2 className="font-semibold">Total da Mesa</h2>
+
+          <div className="mt-2 text-2xl font-bold text-blue-300">
+            R${" "}
+            {(
+              totals.reduce((acc, item) => acc + item.totalCents, 0) / 100
+            ).toFixed(2)}
+          </div>
+        </div>
+
         <div className="mt-4 rounded-xl bg-slate-900 p-4">
           <h2 className="font-semibold">Totais</h2>
 
@@ -397,7 +409,13 @@ export default function RoomPage() {
             {totals.map((total) => (
               <div
                 key={total.participantId}
-                className="rounded-lg bg-slate-800 p-3"
+                className="
+  rounded-xl
+  border
+  border-slate-700
+  bg-slate-800
+  p-4
+"
               >
                 <>
                   <div className="font-medium">{total.nickname}</div>
@@ -410,7 +428,7 @@ export default function RoomPage() {
                     Taxa: R$ {(total.serviceFeeCents / 100).toFixed(2)}
                   </div>
 
-                  <div className="text-slate-200 font-semibold">
+                  <div className="text-slate-100 font-bold text-lg mt-3 pt-2 border-t border-slate-700">
                     Total: R$ {(total.totalCents / 100).toFixed(2)}
                   </div>
                 </>
