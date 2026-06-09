@@ -10,6 +10,8 @@ import { calculateParticipantTotals } from "@/features/split/domain/calculate-pa
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { subscribeRoom } from "@/features/room/realtime/subscribe-room";
 import Link from "next/link";
+import { deleteItem } from "@/features/room/api/delete-item";
+import { updateItem } from "@/features/room/api/update-item";
 
 interface Room {
   id: string;
@@ -49,6 +51,12 @@ export default function RoomPage() {
   const [itemName, setItemName] = useState("");
 
   const [itemPrice, setItemPrice] = useState("");
+
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
+  const [editingName, setEditingName] = useState("");
+
+  const [editingPrice, setEditingPrice] = useState("");
 
   async function refreshRoom(roomId: string) {
     const snapshot = await fetchRoomSnapshot(roomId);
@@ -117,6 +125,67 @@ export default function RoomPage() {
 
     setItemName("");
     setItemPrice("");
+  }
+
+  async function handleSaveEdit() {
+    console.log("SAVE INICIO");
+
+    if (!editingItemId || !room) {
+      console.log("SEM ITEM OU ROOM");
+      return;
+    }
+
+    const value = Number(editingPrice.replace(",", "."));
+
+    console.log("VALOR", value);
+
+    if (Number.isNaN(value)) {
+      console.log("VALOR INVALIDO");
+      return;
+    }
+
+    await updateItem({
+      itemId: editingItemId,
+      name: editingName,
+      priceCents: Math.round(value * 100),
+    });
+
+    console.log("UPDATE EXECUTADO");
+
+    setEditingItemId(null);
+
+    setEditingName("");
+
+    setEditingPrice("");
+
+    await refreshRoom(room.id);
+
+    console.log("REFRESH EXECUTADO");
+  }
+
+  async function handleDeleteItem(itemId: string) {
+    console.log("DELETE INICIO", itemId);
+
+    if (!room) {
+      console.log("SEM ROOM");
+      return;
+    }
+
+    const confirmed = confirm("Excluir este item?");
+
+    console.log("CONFIRMADO?", confirmed);
+
+    if (!confirmed) {
+      return;
+    }
+
+    await deleteItem(itemId);
+
+    console.log("DELETE EXECUTADO");
+
+    await refreshRoom(room.id);
+
+    console.log("REFRESH EXECUTADO");
   }
 
   function isSelected(itemId: string, participantId: string) {
@@ -268,10 +337,35 @@ export default function RoomPage() {
                 className="space-y-3 rounded-lg bg-slate-800 p-3"
               >
                 <div className="flex items-center justify-between">
-                  <span>{item.name}</span>
-                  <span className="text-slate-300">
-                    R$ {(item.price_cents / 100).toFixed(2)}
-                  </span>
+                  <div>
+                    <div>{item.name}</div>
+
+                    <div className="text-sm text-slate-400">
+                      R$ {(item.price_cents / 100).toFixed(2)}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingItemId(item.id);
+
+                        setEditingName(item.name);
+
+                        setEditingPrice((item.price_cents / 100).toString());
+                      }}
+                      className="rounded bg-blue-600 px-2 py-1 text-sm"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteItem(item.id)}
+                      className="rounded bg-red-600 px-2 py-1 text-sm"
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -310,6 +404,36 @@ export default function RoomPage() {
             ))}
           </div>
         </div>
+
+        {editingItemId && (
+          <div className="mt-4 rounded-xl bg-slate-900 p-4">
+            <h2 className="font-semibold">Editar Item</h2>
+
+            <div className="mt-2 space-y-2">
+              <input
+                type="text"
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                className="w-full rounded-lg bg-slate-800 px-3 py-2"
+              />
+
+              <input
+                type="text"
+                value={editingPrice}
+                onChange={(e) => setEditingPrice(e.target.value)}
+                className="w-full rounded-lg bg-slate-800 px-3 py-2"
+              />
+
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                className="w-full rounded-lg bg-blue-600 px-3 py-2 font-semibold hover:bg-blue-700"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mt-4 rounded-xl bg-slate-900 p-4">
           <h2 className="font-semibold">Totais</h2>
