@@ -9,14 +9,25 @@ export async function fetchRoomSnapshot(roomId: string) {
 
       supabase.from("items").select("*").eq("room_id", roomId),
 
-      supabase.from("item_consumers").select(`
-        item_id,
-        participant_id
-      `),
+      supabase
+        .from("item_consumers")
+        .select("item_id, participant_id"),
     ]);
 
   if (roomResult.error) {
     throw roomResult.error;
+  }
+
+  if (participantsResult.error) {
+    throw participantsResult.error;
+  }
+
+  if (itemsResult.error) {
+    throw itemsResult.error;
+  }
+
+  if (consumersResult.error) {
+    throw consumersResult.error;
   }
 
   return {
@@ -24,14 +35,8 @@ export async function fetchRoomSnapshot(roomId: string) {
 
     participants: participantsResult.data ?? [],
 
-    items: (itemsResult.data ?? []).map((item) => ({
-      ...item,
+    items: itemsResult.data ?? [],
 
-      consumers: (consumersResult.data ?? [])
-
-        .filter((consumer) => consumer.item_id === item.id)
-
-        .map((consumer) => consumer.participant_id),
-    })),
+    itemConsumers: consumersResult.data ?? [],
   };
 }
