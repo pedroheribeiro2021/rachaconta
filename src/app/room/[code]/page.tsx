@@ -262,17 +262,30 @@ export default function RoomPage() {
                     const selected = isSelected(item.id, participant.id);
 
                     return (
-                      <button
+                      <label
                         key={participant.id}
-                        type="button"
-                        onClick={() =>
-                          handleToggleConsumer(item.id, participant.id)
-                        }
-                        className="flex w-full justify-between rounded-lg bg-slate-700 px-3 py-2"
+                        className="
+    flex
+    items-center
+    justify-between
+    rounded-lg
+    bg-slate-700
+    px-3
+    py-2
+    cursor-pointer
+  "
                       >
                         <span>{participant.nickname}</span>
-                        <span>{selected ? "✓" : ""}</span>
-                      </button>
+
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          onChange={() =>
+                            handleToggleConsumer(item.id, participant.id)
+                          }
+                          className="h-5 w-5"
+                        />
+                      </label>
                     );
                   })}
                 </div>
