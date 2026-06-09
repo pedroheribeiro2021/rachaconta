@@ -8,6 +8,7 @@ import { createItem } from "@/features/room/api/create-item";
 import { toggleItemConsumer } from "@/features/item-consumers/api/toggle-item-consumer";
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
+import { subscribeRoom } from "@/features/room/realtime/subscribe-room";
 
 interface Room {
   id: string;
@@ -76,6 +77,20 @@ export default function RoomPage() {
     loadRoom();
   }, [params.code]);
 
+  useEffect(() => {
+    if (!room) {
+      return;
+    }
+
+    const unsubscribe = subscribeRoom(room.id, async () => {
+      await refreshRoom(room.id);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [room]);
+
   async function handleAddItem() {
     if (!room) return;
 
@@ -125,14 +140,6 @@ export default function RoomPage() {
     } catch (error) {
       console.error(error);
     }
-
-    // setItemConsumers((current) => [
-    //   ...current,
-    //   {
-    //     item_id: itemId,
-    //     participant_id: participantId,
-    //   },
-    // ]);
   }
 
   const totals = room
