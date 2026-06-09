@@ -9,6 +9,7 @@ import { toggleItemConsumer } from "@/features/item-consumers/api/toggle-item-co
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { subscribeRoom } from "@/features/room/realtime/subscribe-room";
+import Link from "next/link";
 
 interface Room {
   id: string;
@@ -191,6 +192,22 @@ export default function RoomPage() {
         >
           Copiar convite
         </button>
+
+        <Link
+          href={`/room/${room.code}/summary`}
+          className="
+    mt-3
+    ml-2
+    inline-block
+    rounded-lg
+    bg-green-700
+    px-3
+    py-2
+    text-sm
+  "
+        >
+          Ver Resumo
+        </Link>
 
         <p className="mt-4 text-slate-400">
           Taxa de serviço: {room.service_fee_percent}%
