@@ -70,18 +70,6 @@ export default function HomePage() {
         >
           {loading ? "Criando..." : "Criar Mesa"}
         </button>
-        <button
-          style={{ marginTop: "1rem" }}
-          className="
-            w-full
-            rounded-xl
-            bg-violet-600
-            py-3
-            font-semibold
-          "
-        >
-          <Link href="/join">Entrar em Mesa</Link>
-        </button>
       </div>
     </main>
   );

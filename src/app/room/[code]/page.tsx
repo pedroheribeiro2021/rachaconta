@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { getRoomByCode } from "@/features/room/api/get-room-by-code";
-import { getParticipantsByRoom } from "@/features/room/api/get-participants-by-room";
-import { getItemsByRoom } from "@/features/room/api/get-items-by-room";
-import { getItemConsumers } from "@/features/room/api/get-item-consumers";
 import { createItem } from "@/features/room/api/create-item";
 import { toggleItemConsumer } from "@/features/item-consumers/api/toggle-item-consumer";
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
+import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 
 interface Room {
   id: string;
@@ -50,26 +48,24 @@ export default function RoomPage() {
 
   const [itemPrice, setItemPrice] = useState("");
 
+  async function refreshRoom(roomId: string) {
+    const snapshot = await fetchRoomSnapshot(roomId);
+
+    setRoom(snapshot.room);
+
+    setParticipants(snapshot.participants);
+
+    setItems(snapshot.items);
+
+    setItemConsumers(snapshot.itemConsumers);
+  }
+
   useEffect(() => {
     async function loadRoom() {
       try {
         const room = await getRoomByCode(params.code as string);
 
-        setRoom(room);
-
-        const participants = await getParticipantsByRoom(room.id);
-
-        setParticipants(participants);
-
-        const items = await getItemsByRoom(room.id);
-
-        setItems(items);
-
-        const allConsumers = await Promise.all(
-          items.map((item) => getItemConsumers(item.id)),
-        );
-
-        setItemConsumers(allConsumers.flat());
+        await refreshRoom(room.id);
       } catch (error) {
         console.error(error);
       } finally {
@@ -95,13 +91,13 @@ export default function RoomPage() {
       return;
     }
 
-    const item = await createItem({
+    await createItem({
       roomId: room.id,
       name: itemName.trim(),
       priceCents: Math.round(value * 100),
     });
 
-    setItems((current) => [...current, item]);
+    await refreshRoom(room.id);
 
     setItemName("");
     setItemPrice("");
@@ -124,31 +120,19 @@ export default function RoomPage() {
         participantId,
         selected,
       });
+
+      await refreshRoom(room!.id);
     } catch (error) {
       console.error(error);
     }
 
-    if (selected) {
-      setItemConsumers((current) =>
-        current.filter(
-          (consumer) =>
-            !(
-              consumer.item_id === itemId &&
-              consumer.participant_id === participantId
-            ),
-        ),
-      );
-
-      return;
-    }
-
-    setItemConsumers((current) => [
-      ...current,
-      {
-        item_id: itemId,
-        participant_id: participantId,
-      },
-    ]);
+    // setItemConsumers((current) => [
+    //   ...current,
+    //   {
+    //     item_id: itemId,
+    //     participant_id: participantId,
+    //   },
+    // ]);
   }
 
   const totals = room
