@@ -6,15 +6,24 @@ import { useParams } from "next/navigation";
 import { getRoomByCode } from "@/features/room/api/get-room-by-code";
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
+import { Room } from "@/features/room/types/room.types";
+
+type Total = {
+  participantId: string;
+  nickname: string;
+  subtotalCents: number;
+  serviceFeeCents: number;
+  totalCents: number;
+};
 
 export default function RoomSummaryPage() {
   const params = useParams();
 
   const [loading, setLoading] = useState(true);
 
-  const [room, setRoom] = useState<any>(null);
+  const [room, setRoom] = useState<Room | null>(null);
 
-  const [totals, setTotals] = useState<any[]>([]);
+  const [totals, setTotals] = useState<Total[]>([]);
 
   useEffect(() => {
     async function load() {
