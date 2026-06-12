@@ -285,6 +285,7 @@ export default function RoomPage() {
 
           <div className="mt-2 flex flex-wrap gap-2">
             <input
+              data-testid="item-name-input"
               type="text"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
@@ -293,6 +294,7 @@ export default function RoomPage() {
             />
 
             <input
+              data-testid="item-price-input"
               type="text"
               value={itemPrice}
               onChange={(e) => setItemPrice(e.target.value)}
@@ -301,6 +303,7 @@ export default function RoomPage() {
             />
 
             <button
+              data-testid="add-item-button"
               onClick={handleAddItem}
               className="rounded-lg bg-blue-600 px-4 py-2 font-semibold hover:bg-blue-700 whitespace-nowrap"
             >
@@ -313,6 +316,7 @@ export default function RoomPage() {
             {items.map((item) => (
               <div
                 key={item.id}
+                data-testid={`item-${item.id}`}
                 className="
   rounded-xl
   border
@@ -333,6 +337,7 @@ export default function RoomPage() {
 
                   <div className="flex gap-2">
                     <button
+                      data-testid={`edit-item-${item.id}`}
                       onClick={() => {
                         setEditingItemId(item.id);
 
@@ -346,6 +351,7 @@ export default function RoomPage() {
                     </button>
 
                     <button
+                      data-testid={`delete-item-${item.id}`}
                       onClick={() => handleDeleteItem(item.id)}
                       className="rounded bg-red-600 px-2 py-1 text-sm"
                     >
@@ -409,6 +415,7 @@ export default function RoomPage() {
             {totals.map((total) => (
               <div
                 key={total.participantId}
+                data-testid={`total-${total.participantId}`}
                 className="
   rounded-xl
   border
@@ -491,6 +498,7 @@ export default function RoomPage() {
 
             <div className="mt-5 flex gap-2">
               <button
+                data-testid="cancel-item-button"
                 type="button"
                 onClick={closeEditModal}
                 className="
@@ -505,6 +513,7 @@ export default function RoomPage() {
               </button>
 
               <button
+                data-testid="save-item-button"
                 type="button"
                 onClick={handleSaveEdit}
                 className="
