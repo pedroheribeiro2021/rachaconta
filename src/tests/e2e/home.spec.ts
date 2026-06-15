@@ -1,25 +1,19 @@
 import { test, expect } from "@playwright/test";
 
-test("should create room and manage items", async ({ page }) => {
+test("should create room, assign item and calculate totals", async ({
+  page,
+}) => {
   await page.goto("/");
 
   await page.getByPlaceholder("Seu apelido").fill("Pedro");
 
-  await page.getByRole("button", { name: "Criar Mesa" }).click();
+  await page
+    .getByRole("button", {
+      name: "Criar Mesa",
+    })
+    .click();
 
   await page.waitForURL(/\/room\/.+/);
-
-  await expect(
-    page.getByRole("heading", {
-      name: "Participantes",
-    }),
-  ).toBeVisible();
-
-  await expect(
-    page.getByRole("heading", {
-      name: "Itens",
-    }),
-  ).toBeVisible();
 
   await page.getByTestId("item-name-input").fill("Pizza");
 
@@ -29,19 +23,13 @@ test("should create room and manage items", async ({ page }) => {
 
   await expect(page.getByText("Pizza")).toBeVisible();
 
-  await page.locator('[data-testid^="edit-item-"]').first().click();
+  await page.getByRole("checkbox").first().click();
 
-  const modalInputs = page.locator(".fixed input");
+  await expect(page.getByText("Subtotal: R$ 100.00")).toBeVisible();
 
-  await modalInputs.nth(0).fill("Pizza Grande");
+  await expect(page.getByText("Taxa: R$ 10.00")).toBeVisible();
 
-  await page.getByTestId("save-item-button").click();
+  await expect(page.getByText("Total: R$ 110.00")).toBeVisible();
 
-  await expect(page.getByText("Pizza Grande")).toBeVisible();
-
-  page.on("dialog", (dialog) => dialog.accept());
-
-  await page.locator('[data-testid^="delete-item-"]').first().click();
-
-  await expect(page.getByText("Pizza Grande")).toHaveCount(0);
+  await expect(page.getByTestId("room-total")).toContainText("R$ 110.00");
 });

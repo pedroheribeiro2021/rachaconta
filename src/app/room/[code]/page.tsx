@@ -400,7 +400,10 @@ export default function RoomPage() {
         <div className="mt-4 rounded-xl border border-blue-700 bg-blue-900/20 p-4">
           <h2 className="font-semibold">Total da Mesa</h2>
 
-          <div className="mt-2 text-2xl font-bold text-blue-300">
+          <div
+            data-testid="room-total"
+            className="mt-2 text-2xl font-bold text-blue-300"
+          >
             R${" "}
             {(
               totals.reduce((acc, item) => acc + item.totalCents, 0) / 100
