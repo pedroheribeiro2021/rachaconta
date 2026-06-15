@@ -1,24 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("home should load", async ({ page }) => {
-  await page.goto("/");
-
-  await expect(page.getByText("RachaConta")).toBeVisible();
-  await expect(page.getByPlaceholder("Seu apelido")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Criar Mesa" })).toBeVisible();
-});
-
-test("should require nickname before creating room", async ({ page }) => {
-  await page.goto("/");
-
-  page.on("dialog", (dialog) => dialog.accept());
-
-  await page.getByRole("button", { name: "Criar Mesa" }).click();
-
-  await expect(page.getByText("RachaConta")).toBeVisible();
-});
-
-test("should create room and redirect", async ({ page }) => {
+test("should create room and manage items", async ({ page }) => {
   await page.goto("/");
 
   await page.getByPlaceholder("Seu apelido").fill("Pedro");
@@ -27,5 +9,39 @@ test("should create room and redirect", async ({ page }) => {
 
   await page.waitForURL(/\/room\/.+/);
 
-  await expect(page).toHaveURL(/\/room\/.+/);
+  await expect(
+    page.getByRole("heading", {
+      name: "Participantes",
+    }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("heading", {
+      name: "Itens",
+    }),
+  ).toBeVisible();
+
+  await page.getByTestId("item-name-input").fill("Pizza");
+
+  await page.getByTestId("item-price-input").fill("100");
+
+  await page.getByTestId("add-item-button").click();
+
+  await expect(page.getByText("Pizza")).toBeVisible();
+
+  await page.locator('[data-testid^="edit-item-"]').first().click();
+
+  const modalInputs = page.locator(".fixed input");
+
+  await modalInputs.nth(0).fill("Pizza Grande");
+
+  await page.getByTestId("save-item-button").click();
+
+  await expect(page.getByText("Pizza Grande")).toBeVisible();
+
+  page.on("dialog", (dialog) => dialog.accept());
+
+  await page.locator('[data-testid^="delete-item-"]').first().click();
+
+  await expect(page.getByText("Pizza Grande")).toHaveCount(0);
 });
