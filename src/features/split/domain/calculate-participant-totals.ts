@@ -1,4 +1,5 @@
 import { splitCentsEvenly } from "./rounding";
+import { applyServiceFee } from "./service-fee";
 
 import { ParticipantTotal } from "../types/participant-total";
 
@@ -52,14 +53,14 @@ export function calculateParticipantTotals(input: Input): ParticipantTotal[] {
   return input.participants.map((participant) => {
     const subtotal = subtotals.get(participant.id) ?? 0;
 
-    const serviceFee = Math.round(subtotal * (input.serviceFeePercent / 100));
+    const total = applyServiceFee(subtotal, input.serviceFeePercent);
 
     return {
       participantId: participant.id,
       nickname: participant.nickname,
       subtotalCents: subtotal,
-      serviceFeeCents: serviceFee,
-      totalCents: subtotal + serviceFee,
+      serviceFeeCents: total - subtotal,
+      totalCents: total,
     };
   });
 }
