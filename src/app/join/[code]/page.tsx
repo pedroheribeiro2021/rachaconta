@@ -5,6 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 
 import { ensureAnonymousAuth } from "@/lib/supabase/auth";
 import { joinRoom } from "@/features/room/api/join-room";
+import { Logo } from "@/components/shared/logo";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function JoinPage() {
   const params = useParams();
@@ -37,39 +40,31 @@ export default function JoinPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
-      <div className="max-w-md mx-auto pt-16">
-        <h1 className="text-3xl font-bold mb-4">Entrar na mesa</h1>
+    <main className="min-h-screen bg-background p-4">
+      <div className="mx-auto max-w-md pt-16">
+        <Logo className="mb-6 block text-3xl" />
 
-        <p className="text-slate-400 mb-6">Código: {params.code}</p>
+        <h1 className="mb-1 text-2xl font-semibold">Entrar na mesa</h1>
 
-        <input
+        <p className="mb-6 text-muted-foreground">
+          Código: <span className="text-foreground">{params.code}</span>
+        </p>
+
+        <Input
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           placeholder="Seu apelido"
-          className="
-            w-full
-            rounded-xl
-            bg-slate-800
-            px-4
-            py-3
-            mb-4
-          "
+          className="mb-4 h-12"
         />
 
-        <button
+        <Button
           disabled={loading}
           onClick={handleJoinRoom}
-          className="
-            w-full
-            rounded-xl
-            bg-violet-600
-            py-3
-            font-semibold
-          "
+          size="lg"
+          className="h-12 w-full text-base font-semibold"
         >
           {loading ? "Entrando..." : "Entrar"}
-        </button>
+        </Button>
       </div>
     </main>
   );

@@ -22,45 +22,15 @@ export function ItemCard({
   return (
     <button
       onClick={onToggle}
-      className={`
-        w-full
-        rounded-2xl
-        border
-        p-4
-        text-left
-        transition-all
-
-        ${
-          selected
-            ? `
-              border-violet-500
-              bg-violet-500/20
-            `
-            : `
-              border-slate-800
-              bg-slate-900
-            `
-        }
-      `}
+      className={`w-full rounded-2xl border p-4 text-left transition-all ${
+        selected ? "border-primary bg-primary/20" : "border-border bg-card"
+      }`}
     >
-      <div
-        className="
-        flex
-        items-center
-        justify-between
-      "
-      >
+      <div className="flex items-center justify-between">
         <div>
           <p className="font-semibold">{name}</p>
 
-          <p
-            className="
-            text-sm
-            text-slate-400
-          "
-          >
-            {priceLabel}
-          </p>
+          <p className="text-sm text-muted-foreground">{priceLabel}</p>
         </div>
       </div>
     </button>

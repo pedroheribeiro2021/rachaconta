@@ -7,6 +7,7 @@ import { getRoomByCode } from "@/features/room/api/get-room-by-code";
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
 import { Room } from "@/features/room/types/room.types";
+import { Logo } from "@/components/shared/logo";
 
 type Total = {
   participantId: string;
@@ -52,7 +53,7 @@ export default function RoomSummaryPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
+      <main className="min-h-screen bg-background p-4 text-foreground">
         Carregando...
       </main>
     );
@@ -60,7 +61,7 @@ export default function RoomSummaryPage() {
 
   if (!room) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
+      <main className="min-h-screen bg-background p-4 text-foreground">
         Mesa não encontrada
       </main>
     );
@@ -70,65 +71,41 @@ export default function RoomSummaryPage() {
     totals.reduce((acc, item) => acc + item.totalCents, 0) / 100;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
-      <div className="max-w-md mx-auto pt-10">
+    <main className="min-h-screen bg-background p-4 text-foreground">
+      <div className="mx-auto max-w-md pt-10">
+        <Logo className="mb-6 block text-2xl" />
+
         <h1 className="text-3xl font-bold">Resumo da Mesa</h1>
 
-        <p className="mt-2 text-slate-400">Código: {room.code}</p>
+        <p className="mt-2 text-muted-foreground">Código: {room.code}</p>
 
         <div className="mt-6 space-y-3">
           {totals.map((total) => (
             <div
               key={total.participantId}
-              className="
-                rounded-xl
-                border
-                border-slate-700
-                bg-slate-900
-                p-4
-              "
+              className="rounded-2xl border border-border bg-card p-4"
             >
               <div className="font-medium">{total.nickname}</div>
 
-              <div className="mt-2 text-slate-400">
+              <div className="mt-2 text-muted-foreground">
                 Subtotal: R$ {(total.subtotalCents / 100).toFixed(2)}
               </div>
 
-              <div className="text-slate-400">
+              <div className="text-muted-foreground">
                 Taxa: R$ {(total.serviceFeeCents / 100).toFixed(2)}
               </div>
 
-              <div
-                className="
-                  mt-2
-                  text-xl
-                  font-bold
-                  text-green-400
-                "
-              >
+              <div className="mt-2 text-xl font-bold text-primary">
                 R$ {(total.totalCents / 100).toFixed(2)}
               </div>
             </div>
           ))}
         </div>
 
-        <div
-          className="
-            mt-6
-            rounded-xl
-            bg-green-950
-            p-4
-          "
-        >
-          <div className="text-green-300">Total da Mesa</div>
+        <div className="mt-6 rounded-2xl bg-primary/15 p-4">
+          <div className="text-primary">Total da Mesa</div>
 
-          <div
-            className="
-              text-3xl
-              font-bold
-              text-green-400
-            "
-          >
+          <div className="text-3xl font-bold text-primary">
             R$ {grandTotal.toFixed(2)}
           </div>
         </div>

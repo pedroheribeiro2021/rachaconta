@@ -6,35 +6,11 @@ interface Props {
 
 export function ParticipantTotal({ nickname, totalLabel }: Props) {
   return (
-    <div
-      className="
-      rounded-2xl
-      bg-slate-900
-      p-4
-    "
-    >
-      <div
-        className="
-        flex
-        items-center
-        justify-between
-      "
-      >
-        <span
-          className="
-          text-slate-300
-        "
-        >
-          {nickname}
-        </span>
+    <div className="rounded-2xl bg-card p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-foreground/80">{nickname}</span>
 
-        <strong
-          className="
-          text-violet-400
-        "
-        >
-          {totalLabel}
-        </strong>
+        <strong className="text-primary">{totalLabel}</strong>
       </div>
     </div>
   );

@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 
 import { createRoom } from "@/features/room/api/create-room";
 import { ensureAnonymousAuth } from "@/lib/supabase/auth";
+import { Logo } from "@/components/shared/logo";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   const router = useRouter();
@@ -38,37 +41,29 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
-      <div className="max-w-md mx-auto pt-16">
-        <h1 className="text-4xl font-bold mb-8">RachaConta</h1>
+    <main className="min-h-screen bg-background p-4">
+      <div className="mx-auto max-w-md pt-16">
+        <Logo className="mb-2 block text-4xl" />
 
-        <input
+        <p className="mb-8 text-muted-foreground">
+          Divida a conta com seus amigos sem complicação.
+        </p>
+
+        <Input
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           placeholder="Seu apelido"
-          className="
-            w-full
-            rounded-xl
-            bg-slate-800
-            px-4
-            py-3
-            mb-4
-          "
+          className="mb-4 h-12"
         />
 
-        <button
+        <Button
           disabled={loading}
           onClick={handleCreateRoom}
-          className="
-            w-full
-            rounded-xl
-            bg-violet-600
-            py-3
-            font-semibold
-          "
+          size="lg"
+          className="h-12 w-full text-base font-semibold"
         >
           {loading ? "Criando..." : "Criar Mesa"}
-        </button>
+        </Button>
       </div>
     </main>
   );
