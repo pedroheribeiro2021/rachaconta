@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Pencil, Plus, Receipt, Share2, Trash2, Users } from "lucide-react";
 
 import { getRoomByCode } from "@/features/room/api/get-room-by-code";
 import { createItem } from "@/features/room/api/create-item";
@@ -9,9 +11,11 @@ import { toggleItemConsumer } from "@/features/item-consumers/api/toggle-item-co
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { subscribeRoom } from "@/features/room/realtime/subscribe-room";
-import Link from "next/link";
 import { deleteItem } from "@/features/room/api/delete-item";
 import { updateItem } from "@/features/room/api/update-item";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Logo } from "@/components/shared/logo";
 
 interface Room {
   id: string;
@@ -209,7 +213,7 @@ export default function RoomPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
+      <main className="min-h-screen bg-background p-4 text-foreground">
         Carregando...
       </main>
     );
@@ -217,32 +221,38 @@ export default function RoomPage() {
 
   if (!room) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
+      <main className="min-h-screen bg-background p-4 text-foreground">
         Mesa não encontrada
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-4">
-      <div className="max-w-md mx-auto pt-10">
+    <main className="min-h-screen bg-background p-4 text-foreground">
+      <div className="mx-auto max-w-md pt-10">
+        <Logo className="mb-6 block text-2xl" />
+
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold">Mesa {room.code}</h1>
 
-            <p className="mt-1 text-slate-400">
+            <p className="mt-1 text-muted-foreground">
               Taxa de serviço: {room.service_fee_percent}%
             </p>
           </div>
 
           <div className="text-right">
-            <div className="text-sm text-slate-300">
+            <div className="text-sm text-muted-foreground">
               {participants.length} participantes
             </div>
-            <div className="text-sm text-slate-300">{items.length} itens</div>
+            <div className="text-sm text-muted-foreground">
+              {items.length} itens
+            </div>
 
-            <div className="mt-2 flex gap-2 justify-end">
-              <button
+            <div className="mt-2 flex justify-end gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   navigator.clipboard.writeText(
                     `${window.location.origin}/join/${room.code}`,
@@ -250,29 +260,32 @@ export default function RoomPage() {
 
                   alert("Link copiado");
                 }}
-                className="rounded-lg bg-slate-800 px-3 py-2 text-sm"
               >
+                <Share2 />
                 Copiar convite
-              </button>
+              </Button>
 
-              <Link
-                href={`/room/${room.code}/summary`}
-                className="rounded-lg bg-green-700 px-3 py-2 text-sm"
-              >
-                Ver Resumo
-              </Link>
+              <Button variant="default" size="sm" asChild>
+                <Link href={`/room/${room.code}/summary`}>
+                  <Receipt />
+                  Ver Resumo
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 rounded-xl bg-slate-900 p-4">
-          <h2 className="font-semibold">Participantes</h2>
+        <div className="mt-8 rounded-2xl bg-card p-4">
+          <h2 className="flex items-center gap-2 font-semibold">
+            <Users className="size-4 text-primary" />
+            Participantes
+          </h2>
 
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             {participants.map((participant) => (
               <div
                 key={participant.id}
-                className="rounded-full bg-blue-900/40 border border-blue-700 px-3 py-1 text-sm"
+                className="rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-sm"
               >
                 {participant.nickname}
               </div>
@@ -280,36 +293,32 @@ export default function RoomPage() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl bg-slate-900 p-4">
+        <div className="mt-4 rounded-2xl bg-card p-4">
           <h2 className="font-semibold">Itens</h2>
 
-          <div className="mt-2 flex flex-wrap gap-2">
-            <input
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Input
               data-testid="item-name-input"
               type="text"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
               placeholder="Item"
-              className="flex-1 min-w-0 rounded-lg bg-slate-800 px-3 py-2"
+              className="min-w-0 flex-1"
             />
 
-            <input
+            <Input
               data-testid="item-price-input"
               type="text"
               value={itemPrice}
               onChange={(e) => setItemPrice(e.target.value)}
               placeholder="R$"
-              className="w-24 rounded-lg bg-slate-800 px-3 py-2"
+              className="w-24"
             />
 
-            <button
-              data-testid="add-item-button"
-              onClick={handleAddItem}
-              className="rounded-lg bg-blue-600 px-4 py-2 font-semibold hover:bg-blue-700 whitespace-nowrap"
-            >
-              <span className="inline sm:hidden">+</span>
+            <Button data-testid="add-item-button" onClick={handleAddItem}>
+              <Plus />
               <span className="hidden sm:inline">Adicionar Item</span>
-            </button>
+            </Button>
           </div>
 
           <div className="mt-4 space-y-4">
@@ -317,27 +326,22 @@ export default function RoomPage() {
               <div
                 key={item.id}
                 data-testid={`item-${item.id}`}
-                className="
-  rounded-xl
-  border
-  border-slate-700
-  bg-slate-800
-  p-4
-  shadow
-"
+                className="rounded-2xl border border-border bg-secondary/60 p-4"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="font-semibold">{item.name}</div>
 
-                    <div className="text-sm text-slate-400">
+                    <div className="text-sm text-muted-foreground">
                       R$ {(item.price_cents / 100).toFixed(2)}
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       data-testid={`edit-item-${item.id}`}
+                      size="icon-sm"
+                      variant="secondary"
                       onClick={() => {
                         setEditingItemId(item.id);
 
@@ -345,38 +349,29 @@ export default function RoomPage() {
 
                         setEditingPrice((item.price_cents / 100).toString());
                       }}
-                      className="rounded bg-blue-600 px-2 py-1 text-sm"
                     >
-                      Editar
-                    </button>
+                      <Pencil />
+                    </Button>
 
-                    <button
+                    <Button
                       data-testid={`delete-item-${item.id}`}
+                      size="icon-sm"
+                      variant="destructive"
                       onClick={() => handleDeleteItem(item.id)}
-                      className="rounded bg-red-600 px-2 py-1 text-sm"
                     >
-                      Excluir
-                    </button>
+                      <Trash2 />
+                    </Button>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="mt-3 space-y-2">
                   {participants.map((participant) => {
                     const selected = isSelected(item.id, participant.id);
 
                     return (
                       <label
                         key={participant.id}
-                        className="
-    flex
-    items-center
-    justify-between
-    rounded-lg
-    bg-slate-700/60
-    px-3
-    py-2
-    cursor-pointer
-  "
+                        className="flex cursor-pointer items-center justify-between rounded-xl bg-card px-3 py-2"
                       >
                         <span>{participant.nickname}</span>
 
@@ -386,7 +381,7 @@ export default function RoomPage() {
                           onChange={() =>
                             handleToggleConsumer(item.id, participant.id)
                           }
-                          className="h-5 w-5"
+                          className="size-5 accent-primary"
                         />
                       </label>
                     );
@@ -397,12 +392,12 @@ export default function RoomPage() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl border border-blue-700 bg-blue-900/20 p-4">
+        <div className="mt-4 rounded-2xl border border-primary/40 bg-primary/15 p-4">
           <h2 className="font-semibold">Total da Mesa</h2>
 
           <div
             data-testid="room-total"
-            className="mt-2 text-2xl font-bold text-blue-300"
+            className="mt-2 text-2xl font-bold text-primary"
           >
             R${" "}
             {(
@@ -411,125 +406,73 @@ export default function RoomPage() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl bg-slate-900 p-4">
+        <div className="mt-4 rounded-2xl bg-card p-4">
           <h2 className="font-semibold">Totais</h2>
 
-          <div className="mt-2 space-y-3">
+          <div className="mt-3 space-y-3">
             {totals.map((total) => (
               <div
                 key={total.participantId}
                 data-testid={`total-${total.participantId}`}
-                className="
-  rounded-xl
-  border
-  border-slate-700
-  bg-slate-800
-  p-4
-"
+                className="rounded-2xl border border-border bg-secondary/60 p-4"
               >
-                <>
-                  <div className="font-medium">{total.nickname}</div>
+                <div className="font-medium">{total.nickname}</div>
 
-                  <div className="mt-2 text-slate-300">
-                    Subtotal: R$ {(total.subtotalCents / 100).toFixed(2)}
-                  </div>
+                <div className="mt-2 text-muted-foreground">
+                  Subtotal: R$ {(total.subtotalCents / 100).toFixed(2)}
+                </div>
 
-                  <div className="text-slate-300">
-                    Taxa: R$ {(total.serviceFeeCents / 100).toFixed(2)}
-                  </div>
+                <div className="text-muted-foreground">
+                  Taxa: R$ {(total.serviceFeeCents / 100).toFixed(2)}
+                </div>
 
-                  <div className="text-slate-100 font-bold text-lg mt-3 pt-2 border-t border-slate-700">
-                    Total: R$ {(total.totalCents / 100).toFixed(2)}
-                  </div>
-                </>
+                <div className="mt-3 border-t border-border pt-2 text-lg font-bold text-foreground">
+                  Total: R$ {(total.totalCents / 100).toFixed(2)}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
+
       {editingItemId && (
-        <div
-          className="
-            fixed
-            inset-0
-            z-50
-            flex
-            items-center
-            justify-center
-            bg-black/70
-            p-4
-          "
-        >
-          <div
-            className="
-              w-full
-              max-w-md
-              rounded-xl
-              bg-slate-900
-              p-5
-            "
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-card p-5">
             <h2 className="text-xl font-semibold">Editar Item</h2>
 
             <div className="mt-4 space-y-3">
-              <input
+              <Input
                 type="text"
                 value={editingName}
                 onChange={(e) => setEditingName(e.target.value)}
-                className="
-                  w-full
-                  rounded-lg
-                  bg-slate-800
-                  px-3
-                  py-2
-                "
               />
 
-              <input
+              <Input
                 type="text"
                 value={editingPrice}
                 onChange={(e) => setEditingPrice(e.target.value)}
-                className="
-                  w-full
-                  rounded-lg
-                  bg-slate-800
-                  px-3
-                  py-2
-                "
               />
             </div>
 
             <div className="mt-5 flex gap-2">
-              <button
+              <Button
                 data-testid="cancel-item-button"
                 type="button"
+                variant="secondary"
                 onClick={closeEditModal}
-                className="
-                  flex-1
-                  rounded-lg
-                  bg-slate-700
-                  px-3
-                  py-2
-                "
+                className="flex-1"
               >
                 Cancelar
-              </button>
+              </Button>
 
-              <button
+              <Button
                 data-testid="save-item-button"
                 type="button"
                 onClick={handleSaveEdit}
-                className="
-                  flex-1
-                  rounded-lg
-                  bg-blue-600
-                  px-3
-                  py-2
-                  font-semibold
-                "
+                className="flex-1"
               >
                 Salvar
-              </button>
+              </Button>
             </div>
           </div>
         </div>
