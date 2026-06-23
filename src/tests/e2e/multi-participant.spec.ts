@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 
-test("should open join page from invite link", async ({ page }) => {
+test("should open join page from invite link for a new participant", async ({
+  page,
+  browser,
+}) => {
   await page.goto("/");
 
   await page.getByPlaceholder("Seu apelido").fill("Pedro");
@@ -17,11 +20,28 @@ test("should open join page from invite link", async ({ page }) => {
 
   const code = url.split("/room/")[1];
 
-  await page.goto(`/join/${code}`);
+  // Uses a fresh browser context (separate anonymous session) so this
+  // behaves like a different person opening the invite link, not the
+  // host revisiting their own link.
+  const guestContext = await browser.newContext();
+
+  const guestPage = await guestContext.newPage();
+
+  await guestPage.goto(`/join/${code}`);
 
   await expect(
-    page.getByRole("button", {
+    guestPage.getByRole("button", {
       name: /entrar/i,
     }),
   ).toBeVisible();
+
+  await guestPage.getByPlaceholder("Seu apelido").fill("João");
+
+  await guestPage.getByRole("button", { name: /entrar/i }).click();
+
+  await guestPage.waitForURL(new RegExp(`/room/${code}$`));
+
+  await expect(guestPage.getByText("2 participantes")).toBeVisible();
+
+  await guestContext.close();
 });

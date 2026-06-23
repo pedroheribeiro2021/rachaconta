@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { ensureAnonymousAuth } from "@/lib/supabase/auth";
 import { joinRoom } from "@/features/room/api/join-room";
+import { getRoomByCode } from "@/features/room/api/get-room-by-code";
+import { getParticipantByRoomAndAuth } from "@/features/room/api/get-participant-by-room-and-auth";
 import { Logo } from "@/components/shared/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,33 @@ export default function JoinPage() {
 
   const [nickname, setNickname] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingReentry, setCheckingReentry] = useState(true);
+
+  useEffect(() => {
+    async function checkReentry() {
+      try {
+        const session = await ensureAnonymousAuth();
+
+        const room = await getRoomByCode(params.code as string);
+
+        const existingParticipant = await getParticipantByRoomAndAuth(
+          room.id,
+          session.user.id,
+        );
+
+        if (existingParticipant) {
+          router.replace(`/room/${params.code}`);
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
+      setCheckingReentry(false);
+    }
+
+    checkReentry();
+  }, [params.code, router]);
 
   async function handleJoinRoom() {
     if (!nickname.trim()) {
@@ -37,6 +66,14 @@ export default function JoinPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingReentry) {
+    return (
+      <main className="min-h-screen bg-background p-4 text-foreground">
+        Carregando...
+      </main>
+    );
   }
 
   return (
