@@ -2,18 +2,18 @@
 
 Postgres gerenciado pelo Supabase (projeto `grsqjzrgngpyckcfkxon`).
 
-## ⚠️ Os arquivos em `supabase/migrations/` não refletem o banco real
+## Schema verificado contra produção
 
-`supabase/migrations/20260528140320_initial_schema.sql` e `20260528140402_rls_policies.sql` descrevem um schema e um conjunto de policies de RLS que **nunca foram de fato aplicados** ao projeto remoto como estão escritos — o banco real foi montado por fora (provavelmente direto no dashboard) em algum momento, e os arquivos do repo nunca foram sincronizados de volta. Confirmado em 2026-06-23 via introspecção direta (`supabase db query` contra `information_schema` e `pg_policies`) depois que uma tentativa de migration (`items_update`/`items_delete`) falhou duas vezes contra colunas e tipos que não existem em produção.
+Confirmado em 2026-06-25 via introspecção direta do projeto Supabase (`grsqjzrgngpyckcfkxon`) contra `information_schema`, `pg_catalog` e `pg_policies`. `supabase/migrations/20260528140320_initial_schema.sql` e `20260528140402_rls_policies.sql` foram reescritos nessa data para servirem de baseline fiel ao que está rodando — antes disso, os arquivos descreviam um schema e policies de RLS que nunca foram de fato aplicados ao projeto remoto (o banco real foi montado por fora, provavelmente direto no dashboard, e os arquivos nunca tinham sido sincronizados de volta).
 
-O conteúdo abaixo descreve **o que está rodando de verdade em produção**, não o que os arquivos de migration dizem. Diferenças relevantes:
+Pontos que vieram de tentativa e erro no histórico (e por isso vale manter registrados):
 
 - `rooms.host_auth_id` é `text` (não `uuid`); `rooms.service_fee_percent` é `integer` (não `numeric(5,2)`); não existem `rooms.status` nem `rooms.updated_at`.
 - `participants.auth_id` é `text` (não `uuid`); a coluna de timestamp é `created_at` (não `joined_at`); **não existe** a constraint `unique(room_id, auth_id)` — nada impede o mesmo `auth_id` de entrar duas vezes na mesma mesa.
 - `items` **não tem** `created_by` nem `updated_at` — bate com o código (`create-item.ts` nunca envia `created_by`).
 - `item_consumers` **não tem** coluna `id` nem `selected_at` — a chave primária é composta (`item_id`, `participant_id`).
-- A tabela `suggestions` **não existe em produção**. O seed (`supabase/seeds/seed.sql`) e a feature de sugestões no app (`src/features/suggestions/`) usam apenas IndexedDB local — ver [`domain.md`](./domain.md) — então essa tabela nunca fez falta na prática.
-- Toda policy de RLS em produção é **permissiva (`true`)** — nenhuma delas usa `auth.uid()` de verdade, apesar do arquivo de migration descrever checagens como `auth.uid() = host_auth_id`.
+- A tabela `suggestions` **não existe em produção** e foi removida da migration. O seed (`supabase/seeds/seed.sql`) e a feature de sugestões no app (`src/features/suggestions/`) usam apenas IndexedDB local — ver [`domain.md`](./domain.md) — então essa tabela nunca fez falta na prática.
+- Toda policy de RLS em produção é **permissiva (`true`)** — nenhuma delas usa `auth.uid()` de verdade.
 
 ## Tabelas (schema real)
 

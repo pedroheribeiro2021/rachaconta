@@ -1,73 +1,66 @@
 create policy "rooms_select"
 on public.rooms
 for select
+to authenticated
 using (true);
 
 create policy "rooms_insert"
 on public.rooms
 for insert
-with check (auth.uid() = host_auth_id);
+to authenticated
+with check (true);
 
 create policy "participants_select"
 on public.participants
 for select
+to authenticated
 using (true);
 
 create policy "participants_insert"
 on public.participants
 for insert
-with check (auth.uid() = auth_id);
+to authenticated
+with check (true);
 
 create policy "items_select"
 on public.items
 for select
+to authenticated
 using (true);
 
 create policy "items_insert"
 on public.items
 for insert
-with check (
-    exists (
-        select 1
-        from public.participants p
-        where p.id = created_by
-    )
-);
+to authenticated
+with check (true);
+
+create policy "items_update"
+on public.items
+for update
+to authenticated
+using (true)
+with check (true);
+
+create policy "items_delete"
+on public.items
+for delete
+to authenticated
+using (true);
 
 create policy "item_consumers_select"
 on public.item_consumers
 for select
+to authenticated
 using (true);
 
 create policy "item_consumers_insert"
 on public.item_consumers
 for insert
-with check (
-    exists (
-        select 1
-        from public.participants p
-        where p.id = participant_id
-    )
-);
+to authenticated
+with check (true);
 
 create policy "item_consumers_delete"
 on public.item_consumers
 for delete
-using (
-    exists (
-        select 1
-        from public.participants p
-        where p.id = participant_id
-          and p.auth_id = auth.uid()
-    )
-);
-
-create policy "suggestions_select"
-on public.suggestions
-for select
+to authenticated
 using (true);
-
-create policy "suggestions_insert"
-on public.suggestions
-for insert
-with check (true);

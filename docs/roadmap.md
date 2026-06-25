@@ -10,4 +10,4 @@ Próximos passos anotados por Pedro para evoluir o app.
 - [ ] Calculadora dentro do app
 - [ ] Modal de convite com QR code, opção de compartilhar e enviar o link via apps externos
 - [ ] OCR (ou outra forma de leitura) de comanda/cupom fiscal para gerar lançamentos automaticamente
-- [ ] Repaginar todo o estilo da aplicação
+- [x] Repaginar todo o estilo da aplicação
