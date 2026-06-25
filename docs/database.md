@@ -58,15 +58,28 @@ Chave primária composta `(item_id, participant_id)` — não tem `id` próprio.
 
 ## Row-Level Security — estado real
 
-RLS está habilitado, mas **toda policy de escrita em produção é totalmente permissiva**:
+RLS está habilitado com isolamento real por sessão anônima (migration `20260625000000_rls_enforce.sql`, aplicada em 2026-06-25).
 
-| Tabela | Operações com policy | Regra real |
+`auth.uid()` retorna `uuid`; `host_auth_id` e `auth_id` são `text` — todas as policies usam `auth.uid()::text` para comparação.
+
+Duas funções `security definer` evitam recursão RLS em `participants`:
+- `public.is_room_participant(room_id uuid)` — retorna true se o chamador é participante da mesa
+- `public.is_own_participant(participant_id uuid)` — retorna true se o `participant_id` pertence ao chamador
+
+| Tabela | Op | Regra |
 |---|---|---|
-| `rooms` | select, insert | `true` |
-| `participants` | select, insert | `true` |
-| `items` | select, insert, update, delete | `true` |
-| `item_consumers` | select, insert, delete | `true` |
+| `rooms` | SELECT | `true` (open read — necessário para `joinRoom` antes de ser participante) |
+| `rooms` | INSERT | `host_auth_id = auth.uid()::text` |
+| `participants` | SELECT | `is_room_participant(room_id)` |
+| `participants` | INSERT | `auth_id = auth.uid()::text` |
+| `items` | SELECT | `is_room_participant(room_id)` |
+| `items` | INSERT | `is_room_participant(room_id)` |
+| `items` | UPDATE | `is_room_participant(room_id)` (using + with check) |
+| `items` | DELETE | `is_room_participant(room_id)` |
+| `item_consumers` | SELECT | item → `is_room_participant(item.room_id)` |
+| `item_consumers` | INSERT | `is_own_participant(participant_id)` + item na sua mesa |
+| `item_consumers` | DELETE | `is_own_participant(participant_id)` |
 
-Não há policy de `update`/`delete` para `rooms` nem `participants` (deny por padrão nessas operações), e não há policy de `update` para `item_consumers`. Fora isso, **qualquer cliente com a anon key pode ler e escrever qualquer linha de qualquer tabela** — não há isolamento por mesa nem por participante hoje. Isso é adequado para um MVP sem contas reais, mas vale ter em mente: não há proteção contra um participante malicioso editar/excluir itens de outra mesa, por exemplo.
+Não há policy de `update`/`delete` para `rooms` nem `participants` (deny por padrão).
 
-Decisão registrada em 2026-06-23: não alterar esse comportamento agora (ver [[project_architecture]] na memória do projeto) — qualquer reforço de RLS deve primeiro corrigir os tipos (`text` vs `uuid` em `auth_id`/`host_auth_id`) e ser testado contra o schema real, não contra os arquivos de migration desatualizados.
+**Limitação conhecida**: `items` não tem `created_by`, então qualquer participante da mesa pode editar/excluir itens de outros participantes. Para restringir ao criador seria necessário adicionar `created_by text` ao schema.
