@@ -45,9 +45,12 @@ create policy "rooms_insert"
 
 -- ─── participants ─────────────────────────────────────────────────────────────
 
+-- OR auth_id = auth.uid()::text: PostgREST valida a SELECT policy antes do
+-- INSERT ocorrer (pre-check do RETURNING). Sem essa condição, is_room_participant
+-- retorna false (linha ainda não existe) e o INSERT falha com RLS violation.
 create policy "participants_select"
   on public.participants for select to authenticated
-  using (is_room_participant(room_id));
+  using (auth_id = auth.uid()::text OR is_room_participant(room_id));
 
 create policy "participants_insert"
   on public.participants for insert to authenticated
