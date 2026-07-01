@@ -18,6 +18,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/shared/logo";
+import { RoomQrCode } from "@/features/room/components/room-qr-code";
 
 interface Room {
   id: string;
@@ -68,6 +69,8 @@ export default function RoomPage() {
   const [currentAuthId, setCurrentAuthId] = useState<string | null>(null);
 
   const [serviceFeeInput, setServiceFeeInput] = useState("10");
+
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   async function refreshRoom(roomId: string) {
     const snapshot = await fetchRoomSnapshot(roomId);
@@ -237,6 +240,44 @@ export default function RoomPage() {
     await refreshRoom(room.id);
   }
 
+  async function handleCopyInviteLink() {
+    if (!room) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(
+      `${window.location.origin}/join/${room.code}`,
+    );
+
+    alert("Link copiado");
+  }
+
+  async function handleShareInvite() {
+    if (!room) {
+      return;
+    }
+
+    const joinUrl = `${window.location.origin}/join/${room.code}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "RachaConta",
+          text: "Entre na nossa mesa para dividir a conta",
+          url: joinUrl,
+        });
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          console.error(error);
+        }
+      }
+
+      return;
+    }
+
+    await handleCopyInviteLink();
+  }
+
   const isHost = !!room && !!currentAuthId && room.host_auth_id === currentAuthId;
 
   const totals = room
@@ -319,18 +360,13 @@ export default function RoomPage() {
 
             <div className="mt-2 flex justify-end gap-2">
               <Button
+                data-testid="invite-button"
                 variant="secondary"
                 size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/join/${room.code}`,
-                  );
-
-                  alert("Link copiado");
-                }}
+                onClick={() => setInviteModalOpen(true)}
               >
                 <Share2 />
-                Copiar convite
+                Convidar
               </Button>
 
               <Button variant="default" size="sm" asChild>
@@ -502,6 +538,53 @@ export default function RoomPage() {
           </div>
         </div>
       </div>
+
+      {inviteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-card p-5">
+            <h2 className="text-xl font-semibold">Convidar para a mesa</h2>
+
+            <div className="mt-4 flex justify-center">
+              <RoomQrCode roomCode={room.code} />
+            </div>
+
+            <p className="mt-4 truncate rounded-xl bg-secondary/60 px-3 py-2 text-sm text-muted-foreground">
+              {`${window.location.origin}/join/${room.code}`}
+            </p>
+
+            <div className="mt-5 flex gap-2">
+              <Button
+                data-testid="copy-invite-link-button"
+                type="button"
+                variant="secondary"
+                className="flex-1"
+                onClick={handleCopyInviteLink}
+              >
+                Copiar link
+              </Button>
+
+              <Button
+                data-testid="share-invite-button"
+                type="button"
+                className="flex-1"
+                onClick={handleShareInvite}
+              >
+                <Share2 />
+                Compartilhar
+              </Button>
+            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-3 w-full"
+              onClick={() => setInviteModalOpen(false)}
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+      )}
 
       {editingItemId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
