@@ -13,6 +13,16 @@ export function subscribeRoom(
       {
         event: "*",
         schema: "public",
+        table: "rooms",
+      },
+      onChange,
+    )
+
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
         table: "participants",
       },
       onChange,

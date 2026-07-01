@@ -13,6 +13,8 @@ import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { subscribeRoom } from "@/features/room/realtime/subscribe-room";
 import { deleteItem } from "@/features/room/api/delete-item";
 import { updateItem } from "@/features/room/api/update-item";
+import { updateRoomServiceFee } from "@/features/room/api/update-room-service-fee";
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/shared/logo";
@@ -20,6 +22,7 @@ import { Logo } from "@/components/shared/logo";
 interface Room {
   id: string;
   code: string;
+  host_auth_id: string;
   service_fee_percent: number;
 }
 
@@ -62,10 +65,16 @@ export default function RoomPage() {
 
   const [editingPrice, setEditingPrice] = useState("");
 
+  const [currentAuthId, setCurrentAuthId] = useState<string | null>(null);
+
+  const [serviceFeeInput, setServiceFeeInput] = useState("10");
+
   async function refreshRoom(roomId: string) {
     const snapshot = await fetchRoomSnapshot(roomId);
 
     setRoom(snapshot.room);
+
+    setServiceFeeInput(String(snapshot.room.service_fee_percent));
 
     setParticipants(snapshot.participants);
 
@@ -89,6 +98,12 @@ export default function RoomPage() {
 
     loadRoom();
   }, [params.code]);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setCurrentAuthId(data.session?.user.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     if (!room) {
@@ -202,6 +217,28 @@ export default function RoomPage() {
     }
   }
 
+  async function handleSaveServiceFee() {
+    if (!room) {
+      return;
+    }
+
+    const value = Number(serviceFeeInput);
+
+    if (Number.isNaN(value) || value < 0 || value > 100) {
+      alert("Taxa de serviço deve estar entre 0 e 100");
+      return;
+    }
+
+    await updateRoomServiceFee({
+      roomId: room.id,
+      serviceFeePercent: value,
+    });
+
+    await refreshRoom(room.id);
+  }
+
+  const isHost = !!room && !!currentAuthId && room.host_auth_id === currentAuthId;
+
   const totals = room
     ? calculateParticipantTotals({
         participants,
@@ -236,9 +273,40 @@ export default function RoomPage() {
           <div>
             <h1 className="text-3xl font-bold">Mesa {room.code}</h1>
 
-            <p className="mt-1 text-muted-foreground">
-              Taxa de serviço: {room.service_fee_percent}%
-            </p>
+            {isHost ? (
+              <div className="mt-1 flex items-center gap-2">
+                <label htmlFor="service-fee-input" className="text-muted-foreground">
+                  Taxa de serviço:
+                </label>
+
+                <Input
+                  id="service-fee-input"
+                  data-testid="service-fee-input"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={serviceFeeInput}
+                  onChange={(e) => setServiceFeeInput(e.target.value)}
+                  className="h-8 w-20"
+                />
+
+                <span className="text-muted-foreground">%</span>
+
+                {serviceFeeInput !== String(room.service_fee_percent) && (
+                  <Button
+                    data-testid="save-service-fee-button"
+                    size="sm"
+                    onClick={handleSaveServiceFee}
+                  >
+                    Salvar
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <p className="mt-1 text-muted-foreground">
+                Taxa de serviço: {room.service_fee_percent}%
+              </p>
+            )}
           </div>
 
           <div className="text-right">
