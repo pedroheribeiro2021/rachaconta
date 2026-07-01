@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 import { getRoomByCode } from "@/features/room/api/get-room-by-code";
 import { fetchRoomSnapshot } from "@/features/room/api/fetch-room-snapshot";
 import { calculateParticipantTotals } from "@/features/split/domain/calculate-participant-totals";
 import { Room } from "@/features/room/types/room.types";
 import { Logo } from "@/components/shared/logo";
+import { Button } from "@/components/ui/button";
 
 type Total = {
   participantId: string;
@@ -73,6 +76,13 @@ export default function RoomSummaryPage() {
   return (
     <main className="min-h-screen bg-background p-4 text-foreground">
       <div className="mx-auto max-w-md pt-10">
+        <Button variant="secondary" size="sm" asChild className="mb-6">
+          <Link href={`/room/${room.code}`}>
+            <ArrowLeft />
+            Voltar para a mesa
+          </Link>
+        </Button>
+
         <Logo className="mb-6 block text-2xl" />
 
         <h1 className="text-3xl font-bold">Resumo da Mesa</h1>
