@@ -6,6 +6,8 @@ Postgres gerenciado pelo Supabase (projeto `grsqjzrgngpyckcfkxon`).
 
 Confirmado em 2026-06-25 via introspecção direta do projeto Supabase (`grsqjzrgngpyckcfkxon`) contra `information_schema`, `pg_catalog` e `pg_policies`. `supabase/migrations/20260528140320_initial_schema.sql` e `20260528140402_rls_policies.sql` foram reescritos nessa data para servirem de baseline fiel ao que está rodando — antes disso, os arquivos descreviam um schema e policies de RLS que nunca foram de fato aplicados ao projeto remoto (o banco real foi montado por fora, provavelmente direto no dashboard, e os arquivos nunca tinham sido sincronizados de volta).
 
+Atualizado em 2026-07-02: a migration `20260701000000_rooms_service_fee_update.sql` existia no repo desde 2026-07-01 mas nunca tinha sido aplicada em produção (`list_migrations` parava em `20260625191903_rls_fix_participants_select`) — por isso editar a taxa de serviço na UI não tinha efeito nenhum (o `.update()` sem `.select()` era bloqueado por RLS silenciosamente, sem erro). Aplicada via MCP nesta data.
+
 Pontos que vieram de tentativa e erro no histórico (e por isso vale manter registrados):
 
 - `rooms.host_auth_id` é `text` (não `uuid`); `rooms.service_fee_percent` é `integer` (não `numeric(5,2)`); não existem `rooms.status` nem `rooms.updated_at`.
@@ -70,6 +72,7 @@ Duas funções `security definer` evitam recursão RLS em `participants`:
 |---|---|---|
 | `rooms` | SELECT | `true` (open read — necessário para `joinRoom` antes de ser participante) |
 | `rooms` | INSERT | `host_auth_id = auth.uid()::text` |
+| `rooms` | UPDATE | `host_auth_id = auth.uid()::text` (using + with check) |
 | `participants` | SELECT | `is_room_participant(room_id)` |
 | `participants` | INSERT | `auth_id = auth.uid()::text` |
 | `items` | SELECT | `is_room_participant(room_id)` |
@@ -80,6 +83,8 @@ Duas funções `security definer` evitam recursão RLS em `participants`:
 | `item_consumers` | INSERT | `is_own_participant(participant_id)` + item na sua mesa |
 | `item_consumers` | DELETE | `is_own_participant(participant_id)` |
 
-Não há policy de `update`/`delete` para `rooms` nem `participants` (deny por padrão).
+Não há policy de `delete` para `rooms`, nem de `update`/`delete` para `participants` (deny por padrão).
+
+`rooms.service_fee_percent` também ganhou a constraint `rooms_service_fee_percent_check` (`>= 0 and <= 100`) na mesma migration.
 
 **Limitação conhecida**: `items` não tem `created_by`, então qualquer participante da mesa pode editar/excluir itens de outros participantes. Para restringir ao criador seria necessário adicionar `created_by text` ao schema.
